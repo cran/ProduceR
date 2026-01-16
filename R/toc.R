@@ -14,9 +14,8 @@
 #'
 #' @return data.frame
 #' @export
-#'
-#' @details Currently does not work with values parameter
 toc <- function(df1, df2, values = NULL, a = 10, r = 0.34, sample_rate = 0.01, num_but_discrete = 'NULL') {
+  
   dfname1 <- deparse(substitute(df1))
   dfname2 <- deparse(substitute(df2))
 
@@ -49,9 +48,10 @@ toc <- function(df1, df2, values = NULL, a = 10, r = 0.34, sample_rate = 0.01, n
   tt$score <- mapply(toc_score, tt[[value.x]], tt[[value.y]], a)
   tt$score <- ifelse(abs(tt$score) > r, tt$score, 0)
   tt$format <- NULL
+  tt$abscore <- abs(score)
 
   # Conclusion
-  return(tt %>% select(all_of(c("column", "modality", value.x, value.y, "score"))) %>%
+  return(tt %>% arrange(column, desc(abscore)) %>% select(all_of(c("column", "modality", value.x, value.y, "score"))) %>%
            rename(!!dfname1 := value.x, !!dfname2 := value.y))
 }
 
@@ -66,9 +66,10 @@ toc <- function(df1, df2, values = NULL, a = 10, r = 0.34, sample_rate = 0.01, n
 #'
 #' @export
 toc_score <- function(x, y, a) {
+  logistic <- function(x) 1 / (1 + exp(-x))
   x <- ifelse(is.na(x), 0, x)
   y <- ifelse(is.na(y), 0, y)
-  if      (x + a < y)  { (y/(x + a) - 1) }
+  if      (x + a < y)  { logistic(y/(x + a) - 1)}
   else if (x - a <= y & y <= x + a)  { 0 }
-  else if (y < x - a)  { -(x/(y + a) - 1) }
+  else if (y < x - a)  {-logistic(x/(y + a) - 1)}
 }

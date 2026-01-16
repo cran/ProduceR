@@ -1,5 +1,4 @@
-# VR 202306: Add option to restart with a new partition, but without restarting everything. For both functions.
-# VR 202312: Does not work if count_what is a vector of columns (only single column)
+# VR voir comment il compte les key NA
 #' @title Analysis of the cardinality of a key/identifier in a table
 #'
 #' @description Creates multiple result tables.
@@ -15,11 +14,12 @@
 #' 'rows' to count distinct rows, otherwise the name of the columns whose distinct values are to be counted
 #' @param partition (character vector) names of the columns by which to break down the analysis
 #' @param view automatic opening of generated tables
+#' @param nb_xmpl number of duplicate examples displayed in table 
 #'
 #' @return A set of dataframes in the global environment.
 #' * nup_r_tab: table of n-plicate counts
-#' * nup_xpl_r: table of n-plicate examples
-#' * nup_exZ_r: table of examples of (n-plicates with value 0)
+#' * nup_xmpl_dupl: table of examples of n-plicates 
+#' * nup_xmpl_nakey: table of examples of NA keys (n-plicates with value 0)
 #' * nup_r_tab_part: table of n-plicate counts broken down by the modalities of the `partition` columns
 #'
 #' @examples 
@@ -32,16 +32,28 @@
 #' dup(basic, keyby = "key", view = FALSE)
 #' 
 #' @export
-dup <- function(tab, keyby, count_what = "rows", partition = NULL, view = TRUE) {
+dup <- function(tab, keyby = NULL, count_what = "rows", partition = NULL, view = TRUE, nb_xmpl = 51) {
   
-  # (I) Intermediate table with the same structure as the input table, but with an additional column on the right giving the number of n-plicates
+  if(is.null(keyby)) keyby <- colnames(tab)
+  
+  # (I) Intermediate table with the same structure as the input table, but with an additional column named `cardinal` giving the number of n-plicates
   # -----------------------------------------------------------------------------------------------------------------
+  
+  # Alas, n_distinct({{count_what}}) only accepts a single column, I tried in vain with across(all_of(count_what))
+  if(length(count_what) > 1){
+  # Thus, going on with an intermediate column
+    tab <- tab %>% 
+      mutate(across(count_what), ~ as.character(.)) %>%
+      mutate(concat_count_what = paste0(count_what))
+  # Define the intermediate column as the new `count_what`
+  count_what = "concat_count_what"
+  }
   
   if (count_what != "rows") {
     nup_i_all <- tab %>%
       group_by(across(all_of(!!keyby))) %>%
-      mutate(cardinal = n_distinct({{count_what}})) %>%
-      ungroup() # Alas, n_distinct({{count_what}}) only accepts a single column, I tried in vain with across(all_of(count_what))
+      mutate(cardinal = n_distinct(!!sym(count_what))) %>%
+      ungroup() 
   } else {
     nup_i_all <- tab %>%
       group_by(across(all_of(!!keyby))) %>%
@@ -61,7 +73,7 @@ dup <- function(tab, keyby, count_what = "rows", partition = NULL, view = TRUE) 
       arrange(cardinal) %>%
       collect()
     
-    if (count_what != 'rows') nup_r_tab <- nup_r_tab %>% rename(nb_val_distinct = nb_lignes)
+    if (count_what != 'rows') nup_r_tab <- nup_r_tab %>% select(-nb_clefs)
     
     if (view) View(nup_r_tab)
     
@@ -69,31 +81,34 @@ dup <- function(tab, keyby, count_what = "rows", partition = NULL, view = TRUE) 
     
     if (!(tally(nup_r_tab) == 1 && sum(nup_r_tab$cardinal) == 1)) # if there are duplicates
     {
-      nup_xpl_r <- nup_i_all %>%
+      nup_xmpl_dupl <- nup_i_all %>%
         filter(cardinal > 1) %>%
-        head(527) %>%
+        head(nb_xmpl) %>%
         arrange(across(all_of(!!keyby))) %>%
         collect()
       
-      if (view) View(nup_xpl_r)
+      if (view) View(nup_xmpl_dupl)
     }
   
   # Result 3: examples of zero-plons (rows whose key is NA)
   
-    nup_exZ_r <- nup_i_all %>% filter(is.na(.data[[keyby]])) %>% head(510) %>% collect()
-
-    if (view) if(nrow(nup_exZ_r) > 0) View(nup_exZ_r)
+    nup_xmpl_nakey <- nup_i_all %>% filter(if_any(all_of(!!keyby), is.na))
+    
+    if (view) if(nrow(nup_xmpl_nakey) > 0) View(nup_xmpl_nakey)
   
   # Result 4: modalities of the partition column when there are n-plicates
   
     if (!is.null(partition)) {
       nup_r_tab_part <- nup_i_all %>%
         group_by(!!sym(partition), cardinal) %>%
-        summarise(nb_clefs = n_distinct(across(all_of(!!keyby))), nb_lignes = n()) %>%
+        summarise(nb_clefs = n_distinct(!!sym(keyby)), nb_lignes = n()) %>%
         arrange(!!sym(partition), cardinal) %>%
         collect()
       
-      if (view) View(nup_r_tab_part) # VR issue: partition is not in nup_i_all
+      if (view) if (!is.null(partition)) View(nup_r_tab_part) # VR issue: partition is not in nup_i_all
     }
-    
+  
+  # list of outputs
+    list_dup <- mget(ls(pattern = "^nup_r|^nup_xmpl"), envir = environment())
+    return(list_dup)
 }

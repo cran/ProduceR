@@ -1,5 +1,5 @@
 utils::globalVariables(c(":=", "Freq", "RAN_UNI_CNS", "cardinal", "chi2", "column", "expected_independence",
-                         "indicator", "modality", "modality_margin_col_mod", "modality_margin_criterion",
+                         "indicator", "modality", "modality_margin_col_mod", "modality_margin_criterion", "nb_clefs", "score", "abscore",
                          "nb_lignes", "overall_margin"))
 
 #' @title short for `paste0()`

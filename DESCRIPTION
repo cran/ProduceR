@@ -1,6 +1,6 @@
 Package: ProduceR
 Title: Concise and Efficient Tools for Everyday Statistical Production
-Version: 1.0
+Version: 1.1
 Authors@R: c(person("Vincent", "Reduron", email = "vincent.reduron@laposte.net", role = c("cre", "aut")))
 Description: A set of concise and efficient tools for statistical production. Can also be used for data management.
     In statistical production, you deal with complex data and need to control your process at each step of your work.
@@ -16,8 +16,8 @@ Imports: dplyr, rlang, tibble
 RoxygenNote: 7.3.2
 License: MIT + file LICENSE
 NeedsCompilation: no
-Packaged: 2025-10-28 12:50:38 UTC; vincent.reduron
+Packaged: 2026-01-16 16:13:06 UTC; vincent.reduron
 Author: Vincent Reduron [cre, aut]
 Maintainer: Vincent Reduron <vincent.reduron@laposte.net>
 Repository: CRAN
-Date/Publication: 2025-10-31 18:30:02 UTC
+Date/Publication: 2026-01-16 16:40:02 UTC

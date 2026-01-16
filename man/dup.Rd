@@ -4,7 +4,14 @@
 \alias{dup}
 \title{Analysis of the cardinality of a key/identifier in a table}
 \usage{
-dup(tab, keyby, count_what = "rows", partition = NULL, view = TRUE)
+dup(
+  tab,
+  keyby = NULL,
+  count_what = "rows",
+  partition = NULL,
+  view = TRUE,
+  nb_xmpl = 51
+)
 }
 \arguments{
 \item{tab}{Either an R dataframe or a reference to a remote table ("remote table")}
@@ -17,12 +24,14 @@ dup(tab, keyby, count_what = "rows", partition = NULL, view = TRUE)
 \item{partition}{(character vector) names of the columns by which to break down the analysis}
 
 \item{view}{automatic opening of generated tables}
+
+\item{nb_xmpl}{number of duplicate examples displayed in table}
 }
 \value{
 A set of dataframes in the global environment.
 * nup_r_tab: table of n-plicate counts
-* nup_xpl_r: table of n-plicate examples
-* nup_exZ_r: table of examples of (n-plicates with value 0)
+* nup_xmpl_dupl: table of examples of n-plicates 
+* nup_xmpl_nakey: table of examples of NA keys (n-plicates with value 0)
 * nup_r_tab_part: table of n-plicate counts broken down by the modalities of the `partition` columns
 }
 \description{

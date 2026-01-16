@@ -17,6 +17,7 @@
 #'
 #' @export
 tac <- function(df, values = NULL, sample_rate = 0.01, num_but_discrete = 'NULL', strates = NULL) {
+  
   if(nrow(df) == 0) stop("The input table for the tac() function has no observations")
 
   # (1) Create an empty data.frame to store results
@@ -57,7 +58,7 @@ tac <- function(df, values = NULL, sample_rate = 0.01, num_but_discrete = 'NULL'
   }
 
   # (4) Select & arrange: to manage column and row order
-  return(tac_stock %>% arrange(column, modality))
+  return(tac_stock %>% arrange(column, modality) %>% relocate(column, modality, format, Freq))
 }
 
 #' Contingency table for column `col_name` in data.frame `df
@@ -74,6 +75,7 @@ get_tac_column <- function(df, col_name, values, strates) {
     return(df %>% group_by(across(all_of(c("modality", strates)))) %>%
              summarise(Freq = n(), across(all_of(values), ~ round(sum(., na.rm = TRUE), 2), .names = "sum_{.col}")) %>%
              mutate(column = col_name, format = typeof(df[[col_name]])) %>%
+             relocate(column, format, modality) %>%
              collect())
   }
 }

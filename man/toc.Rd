@@ -35,6 +35,3 @@ data.frame
 \description{
 Generalized detection of outlier values in a database, based on contingency tables (tac)
 }
-\details{
-Currently does not work with values parameter
-}

@@ -1,6 +1,7 @@
-utils::globalVariables(c(":=", "Freq", "RAN_UNI_CNS", "cardinal", "chi2", "column", "expected_independence",
-                         "indicator", "modality", "modality_margin_col_mod", "modality_margin_criterion", "nb_clefs", "score", "abscore",
-                         "nb_lignes", "overall_margin"))
+utils::globalVariables(c(":=", "freq", "RAN_UNI_CNS", "cardinal", "chi2", "column", "expected_independence",
+                         "indicator", "modality", "modality_margin_col_mod", "modality_margin_criterion", 
+                         "nb_clefs", "score", "abscore", "col_typology",
+                         "nb_lignes", "overall_margin", "iris"))
 
 #' @title short for `paste0()`
 #' @param a string

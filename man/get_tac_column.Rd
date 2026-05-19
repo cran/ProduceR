@@ -2,7 +2,7 @@
 % Please edit documentation in R/tac.R
 \name{get_tac_column}
 \alias{get_tac_column}
-\title{Contingency table for column `col_name` in data.frame `df}
+\title{Contingency table for column `col_name` in data.frame `df`}
 \usage{
 get_tac_column(df, col_name, values, strates)
 }
@@ -16,5 +16,5 @@ get_tac_column(df, col_name, values, strates)
 \item{strates}{Vector of column names by which to stratify the contingency tables}
 }
 \description{
-Contingency table for column `col_name` in data.frame `df
+Contingency table for column `col_name` in data.frame `df`
 }

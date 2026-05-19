@@ -1,3 +1,20 @@
+
+
+# ProduceR 1.2 (2026-05-19)
+
+### Modifications
+- Les tables en sortie de la fonction `tac()` ont une colonne supplémentaire col_typology (identifiant, quantitative, ...).
+- Les tables en sortie de la fonction `tac()` ont des modalités plus claires pour les variables quantitatives (positive, negative, etc, à la place de 1, -1, etc).
+- Des tables d'exemples ont été ajoutées (il faudra mettre les bons exemples dans le champ @examples)
+- Meilleure valeur par défaut de a pour la fonction `toc()` (plus bas si faible nombre d'observations)
+- Meilleure présentation des colonnes de la table en sortie de la fonction `chi2_find()`
+
+### Corrections de bugs
+- correctif nom de variables dans chi2_find() et toc() (avant Freq, correctif freq)
+- correctif critère tac() pour déterminer les colonnes "identifiant" (avant : mauvaise identification)
+
+---
+
 # ProduceR 1.1 (2025-11-17)
 
 ### Nouvelles fonctionnalités

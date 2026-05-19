@@ -83,8 +83,8 @@ dup <- function(tab, keyby = NULL, count_what = "rows", partition = NULL, view =
     {
       nup_xmpl_dupl <- nup_i_all %>%
         filter(cardinal > 1) %>%
-        head(nb_xmpl) %>%
         arrange(across(all_of(!!keyby))) %>%
+        head(nb_xmpl) %>%
         collect()
       
       if (view) View(nup_xmpl_dupl)

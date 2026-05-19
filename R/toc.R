@@ -36,22 +36,24 @@ toc <- function(df1, df2, values = NULL, a = 10, r = 0.34, sample_rate = 0.01, n
 
   # Names of the values on which detection is based
   if(is.null(values)) {
-    value <- "Freq"
+    value <- "freq"
+    if(missing(a)) a <- pmin(ceiling(mean(nrow(df1), nrow(df2)) / 1e4), 10) # if the score is based on the number of observations (rather than the sum of a 'values' variable), scale it down to under 10 for small tables
   } else {
     value <- paste0("sum_", values[[1]])
   }
-  value.x <- value %+% ".x"
-  value.y <- value %+% ".y"
+  value.x <- paste0(value, ".x")
+  value.y <- paste0(value, ".y")
 
   # Outlier value detection
-  tt <- full_join(tac1, tac2, by = c("column", "format", "modality"), na_matches = "na")
+  tt <- full_join(tac1, tac2, by = c("column", "format", "modality"), na_matches = "na") %>% 
+    mutate(across(c(value.x, value.y), ~ coalesce(., 0)))
   tt$score <- mapply(toc_score, tt[[value.x]], tt[[value.y]], a)
   tt$score <- ifelse(abs(tt$score) > r, tt$score, 0)
   tt$format <- NULL
-  tt$abscore <- abs(score)
+  tt$abscore <- abs(tt$score)
 
   # Conclusion
-  return(tt %>% arrange(column, desc(abscore)) %>% select(all_of(c("column", "modality", value.x, value.y, "score"))) %>%
+  return(tt %>% arrange(desc(abscore), column) %>% select(all_of(c("column", "modality", value.x, value.y, "score"))) %>%
            rename(!!dfname1 := value.x, !!dfname2 := value.y))
 }
 

@@ -18,6 +18,8 @@
 #' @export
 miss <- function(df, values = NULL, view = FALSE) {
 
+  if (!is.null(groups(df))) df <- df %>% ungroup()
+  
   # Table listing NAs per variable: raw
   if (is.null(values)) {
     stat <- df %>% summarise_all(~ sum(is.na(.)))

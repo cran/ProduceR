@@ -7,6 +7,7 @@
 #' @param df Input data.frame
 #' @param values Vector of columns that serve as measures (amounts, counts, etc.)
 #' @param sample_rate Sampling rate, if df is a remote table
+#' @param force_identifier list of columns what user wants to be considred as identifiers
 #' @param num_but_discrete Vector of names of numeric columns with discrete modalities (not continuous)
 #' @param strates Vector of column names by which to stratify the contingency tables
 #'
@@ -16,7 +17,7 @@
 #' tab <- tac(iris) # calculate column frequencies
 #'
 #' @export
-tac <- function(df, values = NULL, sample_rate = 0.01, num_but_discrete = 'NULL', strates = NULL) {
+tac <- function(df, values = NULL, sample_rate = 0.01, force_identifier = 'NULL', num_but_discrete = 'NULL', strates = NULL) {
   
   if(nrow(df) == 0) stop("The input table for the tac() function has no observations")
 
@@ -39,10 +40,10 @@ tac <- function(df, values = NULL, sample_rate = 0.01, num_but_discrete = 'NULL'
     # Compute `modality` - which is a appropriate transformation of column values
     
       # Identifier column (> 85 distinct values) : keep filling in (Y/N)
-      if(length(unique(df[[col_name]])) > 85 & !(col_name %in% num_but_discrete) & num_but_discrete[[1]] != 'all') {
+      if(length(unique(df[[col_name]])) > 85 | col_name %in% force_identifier) {
         
         col_typology = 'identifier'
-        df <- df %>% mutate(modality = ifelse(is.na(modality), "not filled in (NA)", "filled in"))
+        df <- df %>% mutate(modality = ifelse(is.na(.data[[col_name]]), "missing", "filled in"))
         
       # Date or datetime column : keep year 
       } else if(is.POSIXt(df[[col_name]]) | is.Date(df[[col_name]])) {
@@ -51,7 +52,7 @@ tac <- function(df, values = NULL, sample_rate = 0.01, num_but_discrete = 'NULL'
         df <- df %>% mutate(modality := format(.data[[col_name]], "%Y"))
 
       # Numeric value : keep sign (positive, negative, zero or NA)
-      } else if(is.numeric(df[[col_name]]) | is.double(df[[col_name]])) {
+      } else if((is.numeric(df[[col_name]]) | is.double(df[[col_name]])) & !(col_name %in% num_but_discrete) & num_but_discrete[[1]] != 'all') {
         
         col_typology <- 'quantitive'
         df <- df %>% mutate(modality := case_when(is.null(.data[[col_name]]) ~ "NULL", 

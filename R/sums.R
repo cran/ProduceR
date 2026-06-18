@@ -1,0 +1,1 @@
+sums <- function(tab) data.frame(t(data.frame(lapply(tab %>% ungroup %>% select(where(is.numeric)), sum))))

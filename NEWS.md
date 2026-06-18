@@ -1,4 +1,16 @@
+# ProduceR 1.3 (2026-06-18)
 
+### Modifications
+- Changement de noms des colonnes `chi2_find()` pour plus de lisibilité
+
+### Corrections de bugs
+- Correctif `tac()` sur le critère qui détermine que le type de colonne est "identifiant"
+- Correctif `tac()` pour une prise en compte du paramètre `num_but_discrete` dans le pavé qui détermine que le type de colonne est numérique
+- Correctif `chi2_find()` pour que la table tac_TRUE ait la même typologie de colonnes que tac_FALSE (sinon crash)
+
+### Nouvelles fonctionnalités
+- Création fonction `sums()` 
+- La fonction `tac()` a un nouveau paramètre `force_identifier` (forcer tac() à considérer une variable comme identifiant)
 
 # ProduceR 1.2 (2026-05-19)
 

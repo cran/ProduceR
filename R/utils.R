@@ -1,5 +1,6 @@
 utils::globalVariables(c(":=", "freq", "RAN_UNI_CNS", "cardinal", "chi2", "column", "expected_independence",
-                         "indicator", "modality", "modality_margin_col_mod", "modality_margin_criterion", 
+                         "is.criterion", "modality", "criterion_margin", "modality_margin", 
+                         "modality_among_criterion", "modality_among_whole", "criterion_among_modality", "criterion_among_whole",
                          "nb_clefs", "score", "abscore", "col_typology",
                          "nb_lignes", "overall_margin", "iris"))
 

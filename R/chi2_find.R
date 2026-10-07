@@ -53,8 +53,9 @@ chi2_find <- function(df, criterion) {
     # Final table: the strongest correlations with TRUE are of interest, not with FALSE
     filter(is.criterion == TRUE, sign == '+') %>%
     arrange(desc(is.criterion), desc(chi2)) %>%
+    mutate(`criterion` = criterion) %>%
     select(-is.criterion, -sign, -col_typology, -freq, -criterion_margin, -overall_margin, -expected_independence, -format) %>%
-    relocate(chi2, criterion, column, modality, modality_margin, modality_among_criterion, modality_among_whole, criterion_among_modality, criterion_among_whole) %>%
+    relocate(chi2, `criterion`, column, modality, modality_margin, modality_among_criterion, modality_among_whole, criterion_among_modality, criterion_among_whole) %>%
     rename(freq_modality = modality_margin)
 }
 

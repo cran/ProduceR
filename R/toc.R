@@ -10,14 +10,21 @@
 #' @param a Allowed absolute variation
 #' @param r Allowed relative variation
 #' @param sample_rate Sampling rate, if df is a remote table
-#' @param num_but_discrete Numeric variables to be treated as discrete modal variables. If 'all', all numeric variables are treated as discrete modal variables.
-#'
+#' @param force_identifier Vector of names of columns that user wants to be considred as identifiers
+#' @param force_levels Vector of names of numeric columns with discrete modalities (not continuous)
+#' @param force_quanti Vector of names of numeric columns that are continuous (not discrete)
+#' #'
 #' @return data.frame
+#' @examples 
+#' verif <- toc(base_eu_2024, base_eu_2025[base_eu_2025$annee != 2025, ]) 
+#' # ecart  significatif sur la modalite "Catalogne" (disparition dans la base 2024)
+#' 
 #' @export
-toc <- function(df1, df2, values = NULL, a = 10, r = 0.34, sample_rate = 0.01, num_but_discrete = 'NULL') {
+toc <- function(df1, df2, values = NULL, a = 10, r = 0.34, sample_rate = 0.01, force_identifier = 'NULL', force_levels = 'NULL', force_quanti = 'NULL') {
   
-  dfname1 <- deparse(substitute(df1))
-  dfname2 <- deparse(substitute(df2))
+  dfname1 <- deparse(substitute(df1))[[1]] # [[1]] because if df1 is long, is it deparsed into a character vector 
+  dfname2 <- deparse(substitute(df2))[[1]] # [[1]] because if df2 is long, is it deparsed into a character vector 
+  if(dfname1 == dfname2) stop("Probleme non resolu package ProduceR : vos deux df ont le meme nom jusqu'au 80e caractere")
 
   # This program only accepts a single quantity/amount variable
   if(length(values) > 1) stop("The input values vector has multiple elements, which is not accepted by this function.")
@@ -31,8 +38,11 @@ toc <- function(df1, df2, values = NULL, a = 10, r = 0.34, sample_rate = 0.01, n
   df2 <- df2 %>% select(all_of(common_cols))
 
   # Generalized contingency tables for both data.frames
-  tac1 <- tac(df1, values, sample_rate, num_but_discrete)
-  tac2 <- tac(df2, values, sample_rate, num_but_discrete)
+  tac1 <- tac(df1, values, sample_rate, force_identifier = force_identifier, force_levels = force_levels, force_quanti = force_quanti)
+  forced_levels <- tac1 %>% filter(col_typology == 'levels')     %>% select(column) %>% distinct %>% pull
+  forced_idents <- tac1 %>% filter(col_typology == 'identifier') %>% select(column) %>% distinct %>% pull
+  forced_quants <- tac1 %>% filter(col_typology == 'identifier') %>% select(column) %>% distinct %>% pull
+  tac2 <- tac(df2, values, sample_rate, force_identifier = c(forced_idents, force_identifier), force_levels = c(forced_levels, force_levels), force_quanti = c(forced_quants, force_quanti))
 
   # Names of the values on which detection is based
   if(is.null(values)) {
@@ -46,7 +56,7 @@ toc <- function(df1, df2, values = NULL, a = 10, r = 0.34, sample_rate = 0.01, n
 
   # Outlier value detection
   tt <- full_join(tac1, tac2, by = c("column", "format", "modality"), na_matches = "na") %>% 
-    mutate(across(c(value.x, value.y), ~ coalesce(., 0)))
+    mutate(across(all_of(c(value.x, value.y)), ~ coalesce(., 0)))
   tt$score <- mapply(toc_score, tt[[value.x]], tt[[value.y]], a)
   tt$score <- ifelse(abs(tt$score) > r, tt$score, 0)
   tt$format <- NULL

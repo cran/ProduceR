@@ -4,14 +4,14 @@
 \alias{miss}
 \title{Missing: Generate a synthetic table of missing values for all columns of a data.frame}
 \usage{
-miss(df, values = NULL, view = FALSE)
+miss(df, values = NULL, view = T)
 }
 \arguments{
 \item{df}{data.frame: Input data.frame}
 
 \item{values}{column: Variable (~weight) to measure the number of missing values (otherwise, count of rows)}
 
-\item{view}{boolean: Display a glimpse of cases with NA values}
+\item{view}{boolean: automatic opening of generated tables}
 }
 \value{
 data.frame
@@ -20,6 +20,6 @@ data.frame
 Get a synthetic table of missing values for all columns of a data.frame
 }
 \examples{
-miss(mtcars)  # Checking NA values for all columns of mtcars (none)
+miss(base_eu_2025, view = FALSE)  # Checking NA values for all columns of base_eu_2025
 
 }

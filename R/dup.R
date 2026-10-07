@@ -1,5 +1,5 @@
 # VR voir comment il compte les key NA
-#' @title Analysis of the cardinality of a key/identifier in a table
+#' @title Analysis of the nb_appar_clefsity of a key/identifier in a table
 #'
 #' @description Creates multiple result tables.
 #' The term "n-plicate" is used to generalize the notion of duplicate: a n_plicate can be a duplicate, a triplicate, etc.
@@ -36,7 +36,7 @@ dup <- function(tab, keyby = NULL, count_what = "rows", partition = NULL, view =
   
   if(is.null(keyby)) keyby <- colnames(tab)
   
-  # (I) Intermediate table with the same structure as the input table, but with an additional column named `cardinal` giving the number of n-plicates
+  # (I) Intermediate table with the same structure as the input table, but with an additional column named `nb_appar_clefs` giving the number of n-plicates
   # -----------------------------------------------------------------------------------------------------------------
   
   # Alas, n_distinct({{count_what}}) only accepts a single column, I tried in vain with across(all_of(count_what))
@@ -52,12 +52,12 @@ dup <- function(tab, keyby = NULL, count_what = "rows", partition = NULL, view =
   if (count_what != "rows") {
     nup_i_all <- tab %>%
       group_by(across(all_of(!!keyby))) %>%
-      mutate(cardinal = n_distinct(!!sym(count_what))) %>%
+      mutate(nb_appar_clefs = n_distinct(!!sym(count_what))) %>%
       ungroup() 
   } else {
     nup_i_all <- tab %>%
       group_by(across(all_of(!!keyby))) %>%
-      mutate(cardinal = n()) %>%
+      mutate(nb_appar_clefs = n()) %>%
       ungroup()
   }
 
@@ -67,22 +67,21 @@ dup <- function(tab, keyby = NULL, count_what = "rows", partition = NULL, view =
   # Result 1: table of n-plicate counts (nup_r_tab = Results table of n_plicates)
   
     nup_r_tab <- nup_i_all %>%
-      group_by(cardinal) %>%
+      group_by(nb_appar_clefs) %>%
       summarise(nb_lignes = n()) %>%
-      mutate(nb_clefs = nb_lignes / cardinal) %>%
-      arrange(cardinal) %>%
+      mutate(nb_clefs = as.integer(nb_lignes / nb_appar_clefs)) %>%
+      arrange(nb_appar_clefs) %>%
       collect()
     
     if (count_what != 'rows') nup_r_tab <- nup_r_tab %>% select(-nb_clefs)
     
-    if (view) View(nup_r_tab)
-    
+
   # Result 2: examples of n-plicates
     
-    if (!(tally(nup_r_tab) == 1 && sum(nup_r_tab$cardinal) == 1)) # if there are duplicates
+    if (!(tally(nup_r_tab) == 1 && sum(nup_r_tab$nb_appar_clefs) == 1)) # if there are duplicates
     {
       nup_xmpl_dupl <- nup_i_all %>%
-        filter(cardinal > 1) %>%
+        filter(nb_appar_clefs > 1) %>%
         arrange(across(all_of(!!keyby))) %>%
         head(nb_xmpl) %>%
         collect()
@@ -100,14 +99,17 @@ dup <- function(tab, keyby = NULL, count_what = "rows", partition = NULL, view =
   
     if (!is.null(partition)) {
       nup_r_tab_part <- nup_i_all %>%
-        group_by(!!sym(partition), cardinal) %>%
+        group_by(!!sym(partition), nb_appar_clefs) %>%
         summarise(nb_clefs = n_distinct(!!sym(keyby)), nb_lignes = n()) %>%
-        arrange(!!sym(partition), cardinal) %>%
+        arrange(!!sym(partition), nb_appar_clefs) %>%
         collect()
       
       if (view) if (!is.null(partition)) View(nup_r_tab_part) # VR issue: partition is not in nup_i_all
     }
   
+  # Pop-up main result table
+    if (view) View(nup_r_tab)
+    
   # list of outputs
     list_dup <- mget(ls(pattern = "^nup_r|^nup_xmpl"), envir = environment())
     return(list_dup)

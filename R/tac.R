@@ -3,12 +3,14 @@
 #' @description Contingency table (tac) of all columns in a dataframe for control purposes
 #'
 #' @import dplyr
-#'
+#' @importFrom glue glue
+#' 
 #' @param df Input data.frame
 #' @param values Vector of columns that serve as measures (amounts, counts, etc.)
 #' @param sample_rate Sampling rate, if df is a remote table
-#' @param force_identifier list of columns what user wants to be considred as identifiers
-#' @param num_but_discrete Vector of names of numeric columns with discrete modalities (not continuous)
+#' @param force_identifier Vector of names of columns that user wants to be considred as identifiers
+#' @param force_levels Vector of names of numeric columns with discrete modalities (not continuous)
+#' @param force_quanti Vector of names of numeric columns that are continuous (not discrete)
 #' @param strates Vector of column names by which to stratify the contingency tables
 #'
 #' @return data.frame
@@ -17,9 +19,10 @@
 #' tab <- tac(iris) # calculate column frequencies
 #'
 #' @export
-tac <- function(df, values = NULL, sample_rate = 0.01, force_identifier = 'NULL', num_but_discrete = 'NULL', strates = NULL) {
+tac <- function(df, values = NULL, sample_rate = 0.01, force_identifier = 'NULL', force_levels = 'NULL', force_quanti = 'NULL', strates = NULL) {
   
   if(nrow(df) == 0) stop("The input table for the tac() function has no observations")
+  if(!is.null(values)) if(!(values %in% colnames(df))) stop("Your values column is not in input df.")
 
   # (1) Create an empty data.frame to store results
   tac_stock <- data.frame(modality = character(), freq = integer(), column = character(), format = character())
@@ -37,38 +40,42 @@ tac <- function(df, values = NULL, sample_rate = 0.01, force_identifier = 'NULL'
   
   for (col_name in colnames(df)) {
     
+    if(col_name %in% force_identifier & col_name %in% force_levels) stop(glue::glue("{col_name} is both in force_identifier and force_levels. Choose !"))
+    if(col_name %in% force_quanti     & col_name %in% force_levels) stop(glue::glue("{col_name} is both in force_quanti     and force_levels. Choose !"))
+    if(col_name %in% force_identifier & col_name %in% force_quanti) stop(glue::glue("{col_name} is both in force_identifier and force_quanti.   Choose !"))
+
     # Compute `modality` - which is a appropriate transformation of column values
-    
-      # Identifier column (> 85 distinct values) : keep filling in (Y/N)
-      if(length(unique(df[[col_name]])) > 85 | col_name %in% force_identifier) {
+
+    # Date or datetime column : keep year
+    if(is.POSIXt(df[[col_name]]) | is.Date(df[[col_name]])) {
+        
+      col_typology = 'date'
+      df <- df %>% mutate(modality := format(.data[[col_name]], "%Y"))
+
+    # Numeric value : keep sign (positive, negative, zero or NA)
+    } else if((is.numeric(df[[col_name]]) | is.double(df[[col_name]]) | col_name %in% force_quanti) & !(col_name %in% force_levels | col_name %in% force_identifier)) {
+      
+      col_typology <- 'quantitative'
+      df <- df %>% mutate(modality := case_when(is.null(.data[[col_name]]) ~ "NULL", 
+                                                is.na(  .data[[col_name]]) ~ "NA", 
+                                                .data[[col_name]]  < 0 ~ "negative", 
+                                                .data[[col_name]] == 0 ~ "equal to 0", 
+                                                .data[[col_name]]  > 0 ~ "positive" 
+      ))
+
+    # Other cases such as character, boolean, etc (> 85 distinct values) : considered as identifier
+    }else if((length(unique(df[[col_name]])) > 85 | col_name %in% force_identifier) & !(col_name %in% force_levels | col_name %in% force_quanti)) {
         
         col_typology = 'identifier'
         df <- df %>% mutate(modality = ifelse(is.na(.data[[col_name]]), "missing", "filled in"))
         
-      # Date or datetime column : keep year 
-      } else if(is.POSIXt(df[[col_name]]) | is.Date(df[[col_name]])) {
-        
-        col_typology = 'date'
-        df <- df %>% mutate(modality := format(.data[[col_name]], "%Y"))
-
-      # Numeric value : keep sign (positive, negative, zero or NA)
-      } else if((is.numeric(df[[col_name]]) | is.double(df[[col_name]])) & !(col_name %in% num_but_discrete) & num_but_discrete[[1]] != 'all') {
-        
-        col_typology <- 'quantitive'
-        df <- df %>% mutate(modality := case_when(is.null(.data[[col_name]]) ~ "NULL", 
-                                                  is.na(  .data[[col_name]]) ~ "NA", 
-                                                  .data[[col_name]]  < 0 ~ "negative", 
-                                                  .data[[col_name]] == 0 ~ "equal to 0", 
-                                                  .data[[col_name]]  > 0 ~ "positive" 
-        ))
-
-      # Other cases such as character, boolean, etc, with < 85 distinct values : keep whole value (levels)
-      } else {
+    # Other cases such as character, boolean, etc, with < 85 distinct values : keep whole value (levels) 
+    } else {
         
         col_typology <- 'levels'
         df <- df %>% mutate(modality := as.character(.data[[col_name]]))
         
-      }
+    }
 
     # Result data.frame (tac_...) for the column
     tac_column <- get_tac_column(df, col_name, values, strates) %>%
@@ -104,4 +111,3 @@ get_tac_column <- function(df, col_name, values, strates) {
              collect())
   }
 }
-

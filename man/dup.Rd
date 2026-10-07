@@ -2,7 +2,7 @@
 % Please edit documentation in R/dup.R
 \name{dup}
 \alias{dup}
-\title{Analysis of the cardinality of a key/identifier in a table}
+\title{Analysis of the nb_appar_clefsity of a key/identifier in a table}
 \usage{
 dup(
   tab,

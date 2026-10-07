@@ -1,3 +1,9 @@
+# En cours
+
+### Modifications
+- Dans la fonction `tac()`, remplacement du paramètre `num_but_discrete` par `force_discrete` (forcer tac() à considérer une variable comme discrète, c'est-à-dire à modalités)
+- Amélioration `toc()` pour que les deux tables comparées aient le même traitement de leurs colonnes par `tac()` (identifiant, numérique, ...)
+
 # ProduceR 1.3 (2026-06-18)
 
 ### Modifications

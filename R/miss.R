@@ -9,14 +9,14 @@
 #'
 #' @param df data.frame: Input data.frame
 #' @param values column: Variable (~weight) to measure the number of missing values (otherwise, count of rows)
-#' @param view boolean: Display a glimpse of cases with NA values
+#' @param view boolean: automatic opening of generated tables
 #'
 #' @return data.frame
 #'
-#' @examples miss(mtcars)  # Checking NA values for all columns of mtcars (none)
+#' @examples miss(base_eu_2025, view = FALSE)  # Checking NA values for all columns of base_eu_2025
 #'
 #' @export
-miss <- function(df, values = NULL, view = FALSE) {
+miss <- function(df, values = NULL, view = T) {
 
   if (!is.null(groups(df))) df <- df %>% ungroup()
   
@@ -29,10 +29,13 @@ miss <- function(df, values = NULL, view = FALSE) {
 
   # Detailed view of missing values
   if (view == TRUE) {
-    glimpse(df[!complete.cases(df), ])
+    miss_xmpl <- df[!complete.cases(df), ] %>% head(17)
+    View(miss_xmpl)
   }
 
   # Table listing NAs per variable: final form
   # Note: To handle cases where df is a reference to a remote table and not an R table: added collect() instruction
-  return(tibble::rownames_to_column(setNames(data.frame(t(stat %>% collect())), c("Missing")), var = "Variable"))
+  miss_r_tab <- tibble::rownames_to_column(setNames(data.frame(t(stat %>% collect())), c("Missing")), var = "Variable")
+  if (view == TRUE) View(miss_r_tab)
+  return(miss_r_tab)
 }

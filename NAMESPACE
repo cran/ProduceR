@@ -10,13 +10,19 @@ export(is.POSIXct)
 export(is.POSIXlt)
 export(is.POSIXt)
 export(miss)
+export(sums)
 export(tac)
 export(toc)
 export(toc_score)
 import(dplyr)
+importFrom(glue,glue)
 importFrom(rlang,parse_expr)
-importFrom(stats,complete.cases)
-importFrom(stats,setNames)
+importFrom(stats,
+  complete.cases,
+  setNames
+)
 importFrom(tibble,rownames_to_column)
-importFrom(utils,View)
-importFrom(utils,head)
+importFrom(utils,
+  View,
+  head
+)

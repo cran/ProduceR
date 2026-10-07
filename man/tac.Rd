@@ -9,7 +9,8 @@ tac(
   values = NULL,
   sample_rate = 0.01,
   force_identifier = "NULL",
-  num_but_discrete = "NULL",
+  force_levels = "NULL",
+  force_quanti = "NULL",
   strates = NULL
 )
 }
@@ -20,9 +21,11 @@ tac(
 
 \item{sample_rate}{Sampling rate, if df is a remote table}
 
-\item{force_identifier}{list of columns what user wants to be considred as identifiers}
+\item{force_identifier}{Vector of names of columns that user wants to be considred as identifiers}
 
-\item{num_but_discrete}{Vector of names of numeric columns with discrete modalities (not continuous)}
+\item{force_levels}{Vector of names of numeric columns with discrete modalities (not continuous)}
+
+\item{force_quanti}{Vector of names of numeric columns that are continuous (not discrete)}
 
 \item{strates}{Vector of column names by which to stratify the contingency tables}
 }
